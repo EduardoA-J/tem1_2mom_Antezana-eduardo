@@ -4,15 +4,15 @@
 
 ## Estrategia
 
-Separé la ingesta de la capa analítica.
+No cargué el CSV directo a una tabla tipada. Primero lo dejé crudo y después lo pasé a tipos Hive, porque si el SerDe o las fechas fallaban quería poder revisar el texto original.
 
-1. **Landing** (`stg_superstore`): tabla externa sobre el directorio HDFS `/tem1_2mom/eduardoantezana`. Todos los campos son `STRING` y el SerDe es `OpenCSVSerde`, porque los nombres de producto traen comas y comillas.
-2. **Analítica** (`superstore`): tabla interna ORC con Snappy. Aquí van los tipos nativos (`INT`, `DATE`, `DECIMAL`) y el ZIP se normaliza a cinco dígitos con `LPAD`.
-3. La carga es un `INSERT OVERWRITE ... SELECT` con `unix_timestamp(..., 'M/d/yyyy')` para las fechas estadounidenses.
+1. **Landing** (`stg_superstore`): tabla externa sobre `/tem1_2mom/eduardoantezana`. Todo en `STRING` y `OpenCSVSerde`, porque hay nombres de producto con comas y comillas; un split simple por coma los parte mal.
+2. **Analítica** (`superstore`): tabla ORC con Snappy. Ahí sí puse `INT`, `DATE` y `DECIMAL`, y el ZIP lo rellené a cinco dígitos con `LPAD`.
+3. La carga es un `INSERT OVERWRITE ... SELECT`. Las fechas del archivo vienen como `11/8/2016`, así que usé `unix_timestamp(..., 'M/d/yyyy')`.
 
 El diccionario está en [`docs/diccionario-de-datos.md`](diccionario-de-datos.md). El DDL y el DML están en [`sql/01_ddl.sql`](../sql/01_ddl.sql) y [`sql/02_dml.sql`](../sql/02_dml.sql).
 
-`skip.header.line.count` no se aplica con OpenCSVSerde, así que el DML descarta la fila cuyo `row_id` es `Row ID`.
+`skip.header.line.count` con OpenCSVSerde no me saltó la cabecera, así que en el `INSERT` filtré `row_id <> 'Row ID'`.
 
 ## Consulta HiveQL
 
@@ -24,15 +24,15 @@ Capturas en [`evidencias/pregunta_01/`](../evidencias/pregunta_01/).
 
 ## Resultado
 
-- HDFS: `/tem1_2mom/eduardoantezana/Sample_Superstore.csv` (2.2 MB).
+- El CSV quedó en HDFS: `/tem1_2mom/eduardoantezana/Sample_Superstore.csv` (2,2 MB).
 - Base `db_eduardoantezana`, tablas `stg_superstore` (TEXTFILE) y `superstore` (ORC).
-- **9.994 registros** importados en la tabla analítica.
-- Las diez primeras filas coinciden con el CSV (fechas en `yyyy-MM-dd`, descuentos en `DECIMAL(4,2)`).
+- En la analítica cargaron **9.994 registros**.
+- Las diez primeras filas coinciden con el archivo; las fechas ya salen `yyyy-MM-dd` y el descuento como `DECIMAL(4,2)`.
 
 ## Interpretación
 
-El modelo deja el CSV crudo consultable y, al mismo tiempo, una tabla tipada para el resto del examen. Si no convirtiera las fechas en la carga, cada consulta posterior tendría que repetir `unix_timestamp`. ORC reduce el volumen respecto al texto y permite predicados sobre tipos reales, no sobre cadenas.
+La idea de las dos capas es práctica: el landing me sirve para auditar (pregunta 2) y la ORC es la que uso en el resto. Convertir las fechas una sola vez en la carga evita repetir `unix_timestamp` en cada consulta. ORC además deja el archivo mucho más chico que el CSV; en el `DESCRIBE FORMATTED` se ve 354 KB contra unos 18 MB de dato crudo.
 
 ## Conclusión
 
-El dataset queda almacenado en Hive con tipos coherentes, 9.994 líneas cargadas y un diccionario que documenta dominio y restricciones. A partir de aquí las preguntas 2 a 8 leen solo `superstore`, salvo la auditoría de calidad, que también mira el landing para ver el ZIP sin rellenar.
+El Superstore quedó en Hive con tipos que se pueden agregar sin estar casteando a cada rato, y con las 9.994 líneas del CSV. A partir de acá trabajo sobre `superstore`; el landing lo vuelvo a usar solo cuando necesito ver el ZIP tal como venía en el archivo.

@@ -4,9 +4,9 @@
 
 ## Estrategia
 
-Por `product_id` sumé ventas y ganancia. Ordené de mayor a menor y calculé el porcentaje individual y el acumulado con `SUM(...) OVER (ORDER BY ... ROWS UNBOUNDED PRECEDING)`. El corte 80 % es el primer producto cuyo acumulado alcanza 80.
+Por `product_id` sumé ventas y ganancia, ordené de mayor a menor y calculé el porcentaje individual y el acumulado con `SUM(...) OVER (ORDER BY ... ROWS UNBOUNDED PRECEDING)`. El corte del 80 % es el primer producto en el que el acumulado llega a 80.
 
-En ganancias usé solo productos con utilidad positiva. Si mezclara las pérdidas, el 80 % de la utilidad neta se alcanzaría con menos ítems, pero mezclaría dos fenómenos distintos (concentración de utilidad vs productos que destruyen valor). El catálogo tiene 1.862 productos.
+En ganancias me quedé con los que tienen utilidad positiva (1.557 de 1.862). Si metía también los que pierden, el 80 % de la utilidad neta se alcanzaría más rápido, pero estaría mezclando dos cosas distintas: concentración de lo que sí gana y productos que restan. El enunciado pide dos análisis independientes, así que las ventas van por un lado y la ganancia positiva por otro.
 
 ## Consulta HiveQL
 
@@ -20,19 +20,21 @@ Capturas en [`evidencias/pregunta_08/`](../evidencias/pregunta_08/).
 
 | Análisis | Productos para llegar al 80 % | Sobre el catálogo | Lectura |
 |---|---:|---:|---|
-| Ventas | 414 | 22,23 % (414 / 1.862) | Cerca de 80/20, un poco más disperso |
-| Ganancia positiva | 340 | 18,26 % (340 / 1.862; 1.557 productos con ganancia > 0) | Más concentrada que las ventas |
+| Ventas | 414 | 22,23 % (414 / 1.862) | Cerca del 80/20, un poco más disperso |
+| Ganancia positiva | 340 | 18,26 % (340 / 1.862) | Más concentrada que las ventas |
 
-Cabeza de ventas: Canon imageCLASS 2200 (2,68 % de las ventas), Fellowes PB500, Cisco TelePresence, HON 5400, GBC DocuBind TL300.
+Cabeza de ventas: Canon imageCLASS 2200 (2,68 % de las ventas), Fellowes PB500, Cisco TelePresence, HON 5400 y GBC DocuBind TL300.
 
-Cabeza de ganancia: la misma copiadora Canon (~6 % de la utilidad positiva), Fellowes PB500, HP LaserJet 3310, Canon PC1060, Plantronics Savi W720.
+Cabeza de ganancia: otra vez la Canon (~6 % de la utilidad positiva), Fellowes PB500, HP LaserJet 3310, Canon PC1060 y Plantronics Savi W720.
 
 ## Interpretación
 
-Las ventas están menos concentradas que la ganancia: hace falta el 22 % del catálogo para el 80 % de la facturación y el 18 % para el 80 % de la utilidad positiva. La diferencia aparece en productos que venden mucho y aportan poco o restan (Cisco TelePresence, HON 5400, impresoras Cubify). El Pareto de ventas solo no sirve para decidir surtido: el de ganancia recorta justo esos ítems.
+No es un 80/20 de manual: no son exactamente el 20 % de los productos, pero se parece. Para el 80 % de las ventas hace falta el 22 % del catálogo; para el 80 % de la ganancia positiva, el 18 %. La ganancia está más concentrada.
 
-No es un 80/20 literal (no son el 20 % exacto de los productos), pero la cola larga existe: más de tres cuartas partes del catálogo cubren apenas el 20 % restante.
+La diferencia se entiende con los que venden mucho y aportan poco o restan. El Cisco TelePresence y las HON 5400 entran en el Pareto de ventas y no en el de ganancia; las Cubify ni siquiera están en la cabeza de ventas y en utilidad son de las peores (pregunta 5). Si yo recortara catálogo mirando solo quién factura, dejaría afuera justo los que más contribuyen a la utilidad y me quedaría con volumen flaco.
+
+La cola es larga: más de tres cuartos de los productos cubren apenas el 20 % que queda.
 
 ## Conclusión
 
-Un conjunto reducido de productos sostiene la mayor parte de ventas y, aún más, de ganancia. La comparación de las dos curvas muestra que hay volumen sin rentabilidad; cualquier recorte de catálogo debería partir del Pareto de ganancia, no del de ventas.
+Un grupo chico de productos sostiene la mayor parte de las ventas y, todavía más, de la ganancia. Las dos curvas no coinciden, así que un recorte de surtido yo lo haría sobre el Pareto de ganancia, no sobre el de ventas.

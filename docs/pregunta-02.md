@@ -4,9 +4,9 @@
 
 ## Estrategia
 
-Audité el landing (`stg_superstore`), no la tabla ya limpia, para no ocultar el ZIP de 4 dígitos. Excluí la cabecera porque OpenCSVSerde no respeta `skip.header.line.count`. El resumen pedido va en una sola consulta; los nulos por campo y el detalle del ZIP van en dos consultas de apoyo.
+El resumen de nulos, fechas, ventas y descuentos lo corrí sobre `superstore`, que ya tiene tipos. El ZIP de 4 dígitos lo miré en `stg_superstore`, porque en la analítica ya lo relleno con `LPAD` y si auditara solo ahí no lo vería. El descuento lo tomé válido en `[0, 1]`, que es el rango de una fracción.
 
-Intervalo esperado del descuento: `[0, 1]`, que es el dominio de una fracción.
+El resumen va en una consulta; los nulos por campo y el detalle del ZIP, en otras dos.
 
 ## Consulta HiveQL
 
@@ -32,24 +32,24 @@ Capturas en [`evidencias/pregunta_02/`](../evidencias/pregunta_02/).
 | Descuento fuera de `[0, 1]` | 0 |
 | ZIP distinto de 5 dígitos | 438 |
 
-Los 438 ZIP de 4 dígitos están en Massachusetts (135), New Jersey (130), Connecticut (82), Rhode Island (56), New Hampshire (27) y Maine (8): el cero a la izquierda se perdió al tratar el código como número en el CSV de origen.
+Los 438 ZIP cortados caen en Massachusetts (135), New Jersey (130), Connecticut (82), Rhode Island (56), New Hampshire (27) y Maine (8). Es el típico caso del código postal de Nueva Inglaterra cuando Excel lo trata como número y se come el cero de la izquierda (6824 en vez de 06824).
 
-Criterios de tratamiento:
+Cómo lo traté:
 
-| Inconsistencia | Criterio |
+| Inconsistencia | Qué hice |
 |---|---|
-| Cabecera leída como fila | Filtrar `row_id <> 'Row ID'` en la carga |
-| ZIP de 4 dígitos | `LPAD(postal_code, 5, '0')` en la tabla analítica; no se descarta la fila |
-| Espacios no separables (`U+00A0`) en nombres | Reemplazo a espacio en el CSV UTF-8 |
-| Ganancia negativa (1.871 líneas) | No es un error de calidad; se conserva para las preguntas de rentabilidad |
-| Descuentos altos (hasta 0.80) | Válidos en dominio; se analizan en la pregunta 6 |
+| Cabecera leída como fila | En la carga filtro `row_id <> 'Row ID'` |
+| ZIP de 4 dígitos | `LPAD(postal_code, 5, '0')`; no borro la línea |
+| Espacios duros (`U+00A0`) en nombres | Los pasé a espacio al armar el CSV UTF-8 |
+| Ganancia negativa (1.871 líneas) | No es suciedad del archivo; las dejo para rentabilidad |
+| Descuentos altos (hasta 0,80) | Están dentro de `[0, 1]`; los analizo en la pregunta 6 |
 
-No eliminé registros: no hay duplicados de `row_id`, ni fechas rotas, ni ventas nulas o negativas.
+No borré filas. No había `row_id` repetido, ni fechas al revés, ni ventas menores o iguales a cero.
 
 ## Interpretación
 
-El archivo está completo a nivel de nulos y de claves. El único defecto estructural es el ZIP recortado en los estados de Nueva Inglaterra, típico de un Excel que guardó el código postal como número. La ganancia negativa no se trata como suciedad: es señal de negocio y entra en RFM, ranking y descuentos.
+El archivo está bastante limpio: no faltan campos y las claves cierran. Lo único estructural que encontré es el ZIP recortado. Las ganancias en negativo no las marqué como error; si las sacara, el ranking y el análisis de descuentos quedarían maquillados. Lo mismo con los descuentos altos: el dominio los admite, otra cosa es que sean buena política, y eso va en la pregunta 6.
 
 ## Conclusión
 
-El dataset es usable para analítica con 9.994 líneas íntegras. El tratamiento se limita a normalizar ZIP y texto; no hay depuración por borrado.
+Puedo trabajar las 9.994 líneas sin depurar por borrado. El tratamiento se reduce a normalizar ZIP y texto; el resto de “problemas” son de negocio, no de integridad.

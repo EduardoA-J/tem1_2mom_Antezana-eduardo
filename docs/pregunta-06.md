@@ -4,7 +4,7 @@
 
 ## Estrategia
 
-Un `CASE` sobre `discount` (fracción, no porcentaje). Agregué por rango y, en una segunda consulta, por categoría y subcategoría solo en descuento alto. “No rentable” = `profit < 0`.
+Clasifiqué cada línea con un `CASE` sobre `discount`. En Hive el campo es fracción (0,20 = 20 %), no porcentaje. “No rentable” lo definí como `profit < 0`. Después agregué por rango y, en una segunda consulta, por categoría y subcategoría pero solo en descuento alto, para ver dónde pega más.
 
 ## Consulta HiveQL
 
@@ -35,10 +35,12 @@ Subcategorías más afectadas en descuento alto:
 
 ## Interpretación
 
-Sí: a mayor descuento, mayor proporción de líneas en pérdida, y no es un matiz débil. Sin descuento no hay una sola pérdida. En descuento alto las 856 líneas pierden; el margen es −119 %, o sea se pierde más de lo que se factura. Binders concentran el volumen de esos descuentos; Machines concentra pérdida grande con pocas líneas (impresoras y equipos caros). El descuento bajo (sobre todo 20 %) todavía deja margen positivo agregado (11,9 %).
+Sí, se asocian, y se ve bastante claro. Sin descuento no hay una sola línea en pérdida. En descuento bajo todavía hay margen positivo (11,91 %), aunque ya aparece un 13,75 % de no rentables. En el rango medio el 91,62 % pierde. En descuento alto las 856 líneas pierden: 100 %. El margen de ese grupo es −119 %, o sea se pierde más de lo que se factura.
 
-Correlación no es causa: puede que se descuente stock ya deficitario. Aun así, la política de descuentos por encima del 20 % coincide con destrucción de margen.
+Binders concentran la cantidad (613 líneas). Machines son pocas (23) pero se llevan casi 19.580 de pérdida; son equipos caros. El 20 % parece el corte: por debajo el agregado sigue siendo negocio, por encima no.
+
+Eso no prueba que el descuento “cause” la pérdida. Puede que se esté liquidando stock que ya venía mal. Igual, en este dataset, pasar del 20 % coincide con dejar de ganar.
 
 ## Conclusión
 
-Los descuentos elevados están asociados a una proporción mucho mayor de operaciones no rentables. El corte práctico está en 20 %: por encima, el negocio agregado de Superstore deja de ser rentable.
+Los descuentos altos van de la mano de muchas más operaciones no rentables. Con estos números, un descuento por encima del 20 % deja de ser promocional y pasa a destruir margen.

@@ -4,7 +4,9 @@
 
 ## Estrategia
 
-Agrupé por `category` y `product_id`. El margen individual es `SUM(profit)/SUM(sales)`. `RANK()` y `DENSE_RANK()` van particionados por categoría para la ganancia y, en la consulta de volumen, a nivel global. La ganancia acumulada de la categoría es `SUM(ganancia) OVER (PARTITION BY category ORDER BY ganancia DESC ROWS UNBOUNDED PRECEDING)`. “Menor rentabilidad” la medí por ganancia acumulada más negativa: un margen feo en un producto de 20 dólares no pesa igual que perder 8.800 en una impresora 3D.
+Agrupé por `category` y `product_id`. El margen de cada producto es `SUM(profit) / SUM(sales)`. `RANK()` y `DENSE_RANK()` van con `PARTITION BY category` para la ganancia; en el top de ventas el ranking es global. La ganancia acumulada de la categoría la dejé con `SUM(...) OVER (... ROWS UNBOUNDED PRECEDING)`, que es lo que pide el enunciado de agregación acumulativa.
+
+“Menor rentabilidad” la medí por la ganancia más negativa, no por el peor margen porcentual. Un producto de 20 dólares con margen feo no pesa lo mismo que una impresora 3D que pierde casi 8.800.
 
 ## Consulta HiveQL
 
@@ -41,7 +43,7 @@ Capturas en [`evidencias/pregunta_05/`](../evidencias/pregunta_05/).
 **Peor ganancia acumulada:**
 
 | Producto | Ventas | Ganancia | Margen % |
-|---|---:|---:|---:|
+|---|---|---:|---:|---:|
 | Cubify CubeX 3D Printer Double Head | 11.099,96 | −8.879,97 | −80,00 |
 | Lexmark MX611dhe Monochrome Laser | 16.829,90 | −4.589,97 | −27,27 |
 | Cubify CubeX 3D Printer Triple Head | 7.999,98 | −3.839,99 | −48,00 |
@@ -50,8 +52,10 @@ Capturas en [`evidencias/pregunta_05/`](../evidencias/pregunta_05/).
 
 ## Interpretación
 
-El ranking por ventas y el ranking por ganancia no coinciden. El Cisco TelePresence es el tercer producto en facturación y pierde dinero; las sillas HON 5400 venden 21.871 y dejan margen cero. En Furniture el techo de ganancia es bajo (el primero apenas llega a 1.927) comparado con una sola copiadora Canon. `RANK` y `DENSE_RANK` salen iguales en estos top 5 porque no hay empates de ganancia.
+El ranking de ventas y el de ganancia no son el mismo listado. El Cisco TelePresence es el tercero en facturación y pierde 1.811; las sillas HON 5400 venden 21.871 y dejan margen cero. O sea, hay productos que “se ven bien” en volumen y no aportan.
+
+En Furniture el techo es bajo: el primero gana 1.927, menos que varias copiadoras de Technology. La Canon imageCLASS se lleva los dos primeros puestos (ventas y ganancia) y un margen del 41 %. En estos top 5, `RANK` y `DENSE_RANK` salen iguales porque no hubo empates.
 
 ## Conclusión
 
-La rentabilidad se concentra en copiadoras e insumos de encuadernación. El volumen no garantiza utilidad: hay que mirar el margen por producto, no solo el ranking de ventas.
+La utilidad se concentra en copiadoras y en unos pocos equipos de encuadernación. Mirar solo quién vende más engaña: hay que cruzarlo con el margen, si no se premia volumen que está perdiendo plata.

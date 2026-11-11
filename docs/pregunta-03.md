@@ -4,7 +4,9 @@
 
 ## Estrategia
 
-Agrupé por `region` y `YEAR(order_date)` en una CTE. Sobre esa serie anual apliqué `LAG(...) OVER (PARTITION BY region ORDER BY anio)` para la variación. El margen es `ganancia / ventas`. El mejor y peor desempeño los definí por **ganancia total del periodo 2014-2017**, no por ventas: vender más con margen bajo no es mejor desempeño comercial.
+Armé una CTE agrupando por `region` y `YEAR(order_date)`. La variación la saqué con `LAG(...) OVER (PARTITION BY region ORDER BY anio)`, para comparar cada región consigo misma y no con las otras. El margen es `ganancia / ventas`.
+
+Para el mejor y el peor desempeño usé la **ganancia total 2014-2017**, no las ventas. Si mirara solo facturación, Central parecería más sólida que South, y en utilidad es al revés.
 
 ## Consulta HiveQL
 
@@ -48,8 +50,10 @@ Totales 2014-2017:
 
 ## Interpretación
 
-West lidera en ventas, ganancia y margen, y además acelera en 2016-2017 (+34 % y +33 % de ventas). East crece todos los años y cierra 2017 con el segundo mejor margen (15,6 %). South es la región más chica: en 2015 cae un 31 % y en 2017 el margen se hunde al 7,2 % pese a recuperar volumen. Central vende más que South (501 mil vs 392 mil) pero gana menos: el margen de 2014 es casi nulo (0,52 %) y en 2017 vuelve a deteriorarse (5,13 %). Por eso Central es el peor desempeño, no South.
+West gana en los tres frentes: vende más, gana más y tiene mejor margen. Encima en 2016 y 2017 las ventas suben alrededor de 34 % y 33 %. East crece todos los años y cierra 2017 con 15,6 % de margen.
+
+South es la más chica. En 2015 se cae un 31 % y en 2017, aunque recupera volumen, el margen se va a 7,2 %. Central es el caso raro: factura más que South (501 mil contra 392 mil) y aun así gana menos. En 2014 casi no deja utilidad (0,52 %) y en 2017 el margen vuelve a 5,13 %. Por eso puse a Central como peor desempeño y no a South.
 
 ## Conclusión
 
-La región con mejor desempeño comercial es **West**; la peor es **Central**. El crecimiento de ventas no equivale a rentabilidad: Central lo demuestra al superar a South en facturación y quedar última en ganancia.
+La mejor región es **West** y la peor **Central**. Vender más no alcanza: Central factura por encima de South y termina última en ganancia.

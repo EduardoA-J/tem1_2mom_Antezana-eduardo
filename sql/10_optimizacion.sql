@@ -1,5 +1,6 @@
 -- Analisis de optimizacion: ORC, estadisticas y particion por anio
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 EXPLAIN
 SELECT region, YEAR(order_date) AS anio, SUM(sales) AS ventas

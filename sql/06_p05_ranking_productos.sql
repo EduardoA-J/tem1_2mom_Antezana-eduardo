@@ -1,6 +1,7 @@
 -- Pregunta 5. Ranking de productos segun rentabilidad
 -- RANK(), DENSE_RANK() y suma acumulada por categoria
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 WITH producto AS (
   SELECT

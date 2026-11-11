@@ -1,5 +1,6 @@
 -- Pregunta 8. Pareto 80/20 de ventas y de ganancias
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 -- a) cuantos productos concentran el 80 % de las ventas
 WITH producto AS (

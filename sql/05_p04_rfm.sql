@@ -4,6 +4,7 @@
 -- Monetary: ventas acumuladas
 -- Puntuacion 1-5 con NTILE; 5 es mejor (R reciente, F y M altos)
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 WITH rfm_base AS (
   SELECT

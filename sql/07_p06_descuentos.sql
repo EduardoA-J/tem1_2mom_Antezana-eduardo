@@ -1,5 +1,6 @@
 -- Pregunta 6. Impacto de los descuentos sobre la rentabilidad
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 WITH clasificado AS (
   SELECT

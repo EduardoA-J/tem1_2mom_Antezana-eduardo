@@ -1,5 +1,6 @@
 -- Pregunta 1. Carga: conversion de tipos, fechas M/d/yyyy y ZIP a 5 digitos
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 SET hive.stats.autogather=false;
 SET hive.exec.mode.local.auto=true;

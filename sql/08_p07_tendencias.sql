@@ -1,6 +1,7 @@
 -- Pregunta 7. Tendencias temporales mensuales
 -- LAG mes anterior, LAG 12 meses (mismo mes ano anterior), promedio movil 3 meses
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 WITH mensual AS (
   SELECT

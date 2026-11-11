@@ -1,5 +1,6 @@
 -- Pregunta 3. Evolucion comercial por region (CTE + funciones de ventana)
 USE db_eduardoantezana;
+SET hive.resultset.use.unique.column.names=false;
 
 WITH anual AS (
   SELECT

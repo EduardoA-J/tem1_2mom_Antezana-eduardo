@@ -1,27 +1,16 @@
 -- Analisis de optimizacion: ORC, estadisticas y particion por anio
 USE db_eduardoantezana;
 SET hive.resultset.use.unique.column.names=false;
-
-EXPLAIN
-SELECT region, YEAR(order_date) AS anio, SUM(sales) AS ventas
-FROM superstore
-WHERE YEAR(order_date) = 2017
-GROUP BY region, YEAR(order_date);
-
-ANALYZE TABLE superstore COMPUTE STATISTICS;
-ANALYZE TABLE superstore COMPUTE STATISTICS FOR COLUMNS
-  region, order_date, sales, profit, discount, product_id, customer_id, category;
-
-EXPLAIN
-SELECT region, YEAR(order_date) AS anio, SUM(sales) AS ventas
-FROM superstore
-WHERE YEAR(order_date) = 2017
-GROUP BY region, YEAR(order_date);
-
+SET hive.execution.engine=mr;
+SET hive.cbo.enable=true;
 SET hive.exec.dynamic.partition = true;
 SET hive.exec.dynamic.partition.mode = nonstrict;
 SET hive.exec.max.dynamic.partitions = 20;
 SET hive.exec.max.dynamic.partitions.pernode = 20;
+
+ANALYZE TABLE superstore COMPUTE STATISTICS;
+
+DESCRIBE FORMATTED superstore;
 
 DROP TABLE IF EXISTS superstore_part;
 CREATE TABLE superstore_part (
@@ -34,7 +23,8 @@ CREATE TABLE superstore_part (
   profit DECIMAL(12,4)
 )
 PARTITIONED BY (anio INT)
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('orc.compress' = 'SNAPPY');
 
 INSERT OVERWRITE TABLE superstore_part PARTITION (anio)
 SELECT
@@ -48,15 +38,14 @@ SELECT
   YEAR(order_date) AS anio
 FROM superstore;
 
-ANALYZE TABLE superstore_part PARTITION (anio) COMPUTE STATISTICS;
+SHOW PARTITIONS superstore_part;
 
-EXPLAIN
-SELECT region, anio, SUM(sales) AS ventas
-FROM superstore_part
-WHERE anio = 2017
-GROUP BY region, anio;
-
-SELECT anio, COUNT(*) AS registros
+SELECT anio, COUNT(*) AS registros, ROUND(SUM(sales), 2) AS ventas
 FROM superstore_part
 GROUP BY anio
 ORDER BY anio;
+
+SELECT anio, COUNT(*) AS registros, ROUND(SUM(sales), 2) AS ventas
+FROM superstore_part
+WHERE anio = 2017
+GROUP BY anio;

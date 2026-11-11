@@ -80,7 +80,3 @@ docker exec -e HADOOP_HEAPSIZE=2048 hive-server hive -f /tmp/sql/10_optimizacion
 Base de datos: `db_eduardoantezana`.  
 Tabla de aterrizaje: `stg_superstore`.  
 Tabla analítica: `superstore` (ORC).
-
-## Uso de herramientas
-
-Se utilizó el entorno Cursor para organizar el repositorio, redactar la documentación y ejecutar Hive sobre el clúster local. El código HiveQL, los criterios RFM y la interpretación de cada consulta son responsabilidad del estudiante.
